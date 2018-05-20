@@ -1,0 +1,14 @@
+<resources>
+  <string name="app_name">Proshno</string>
+  <string name="no_account">I don\'t have an account yet</string>
+  <string name="sign_in">Sign In</string>
+  <string name="invite_code_hint">invite code</string>
+  <string name="password_hint">password</string>
+  <string name="username_hint">username</string>
+  <string name="proshno_logo">Proshno Logo</string>
+  <string name="avatar">avatar</string>
+  <string name="next_game_at">Next game starts at</string>
+  <string name="img_description_leaderboard">leaderboard</string>
+  <string name="img_description_extra_lives">extra lives</string>
+  <string name="get_extra_lives">Get extra lives</string>
+</resources>
