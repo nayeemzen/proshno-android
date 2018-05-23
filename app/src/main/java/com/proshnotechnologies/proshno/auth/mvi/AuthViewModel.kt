@@ -6,6 +6,7 @@ import com.proshnotechnologies.proshno.auth.mvi.AuthIntent.SignInIntent
 import com.proshnotechnologies.proshno.auth.mvi.AuthIntent.SignUpIntent
 import com.proshnotechnologies.proshno.mvi.MviViewModel
 import io.reactivex.Observable
+import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import javax.inject.Inject
 
@@ -17,7 +18,8 @@ class AuthViewModel @Inject constructor(
     private val statesObservable by lazy {
         intentsSubject
             .map(this::mapIntentToAction)
-            .flatMap(authProcessor::process)
+            .subscribeOn(Schedulers.io())
+            .switchMap(authProcessor::process)
             .scan(AuthViewState.Initial(), authStateReducer::reduce)
     }
 
