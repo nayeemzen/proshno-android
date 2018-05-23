@@ -1,4 +1,4 @@
-package com.proshnotechnologies.proshno.home
+package com.proshnotechnologies.proshno.home.ui
 
 import android.view.LayoutInflater
 import android.view.View
