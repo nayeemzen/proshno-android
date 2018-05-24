@@ -27,11 +27,13 @@ import android.app.ProgressDialog
 import com.bluelinelabs.conductor.RouterTransaction
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler
 import com.proshnotechnologies.proshno.home.ui.HomeController
+import timber.log.Timber
 
 class SignInController : Controller(), MviView<AuthIntent, AuthViewState> {
     @Inject lateinit var viewModel: AuthViewModel
     private lateinit var layout: View
     private val disposables = CompositeDisposable()
+    private var progress : ProgressDialog? = null
 
     override fun intents(): Observable<AuthIntent> = signInIntent()
 
@@ -50,14 +52,12 @@ class SignInController : Controller(), MviView<AuthIntent, AuthViewState> {
     }
 
     override fun render(state: AuthViewState) {
-        var progress : ProgressDialog? = null
-
         if (state.inFlight) {
             progress = ProgressDialog(activity)
-            progress.setTitle("Signing In")
-            progress.setMessage("Please wait...")
-            progress.setCancelable(false)
-            progress.show()
+            progress?.setTitle("Signing In")
+            progress?.setMessage("Please wait...")
+            progress?.setCancelable(false)
+            progress?.show()
         }
 
         if (state.success) {
@@ -65,6 +65,12 @@ class SignInController : Controller(), MviView<AuthIntent, AuthViewState> {
             router.pushController(RouterTransaction.with(HomeController())
                 .pushChangeHandler(HorizontalChangeHandler())
                 .popChangeHandler(HorizontalChangeHandler()))
+        }
+
+        if (state.error != null) {
+            progress?.dismiss()
+            Toast.makeText(activity, "Error signing in: ${state.error.message}",
+                Toast.LENGTH_SHORT).show()
         }
     }
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup): View {

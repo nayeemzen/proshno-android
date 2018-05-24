@@ -19,7 +19,7 @@ class RealAuthRepository @Inject constructor() : AuthRepository {
                 .addOnFailureListener {
                     emitter.onError(it)
                 }
-                .addOnCompleteListener { it ->
+                .addOnCompleteListener {
                     emitter.onComplete()
                 }
         }

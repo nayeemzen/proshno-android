@@ -14,9 +14,11 @@ class AuthProcessor @Inject constructor(val authRepository: AuthRepository)
             is SignInAction -> authRepository
                 .signIn(action.username, action.password)
                 .startWith(AuthResult.InFlight)
+                .onErrorReturn { AuthResult.Failure(it) }
             is SignUpAction -> authRepository
                 .signUp(action.username, action.password, action.inviteCode)
                 .startWith(AuthResult.InFlight)
+                .onErrorReturn { AuthResult.Failure(it) }
         }
     }
 }
