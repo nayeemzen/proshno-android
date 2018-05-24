@@ -22,8 +22,11 @@ import kotlinx.android.synthetic.main.login.view.btn_login
 import kotlinx.android.synthetic.main.login.view.et_password
 import kotlinx.android.synthetic.main.login.view.et_username
 import kotlinx.android.synthetic.main.login.view.tv_no_account
-import timber.log.Timber
 import javax.inject.Inject
+import android.app.ProgressDialog
+import com.bluelinelabs.conductor.RouterTransaction
+import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler
+import com.proshnotechnologies.proshno.home.ui.HomeController
 
 class SignInController : Controller(), MviView<AuthIntent, AuthViewState> {
     @Inject lateinit var viewModel: AuthViewModel
@@ -47,14 +50,21 @@ class SignInController : Controller(), MviView<AuthIntent, AuthViewState> {
     }
 
     override fun render(state: AuthViewState) {
-        Timber.d(state.toString())
+        var progress : ProgressDialog? = null
 
         if (state.inFlight) {
-            Toast.makeText(activity, "In Flight", Toast.LENGTH_SHORT).show()
+            progress = ProgressDialog(activity)
+            progress.setTitle("Signing In")
+            progress.setMessage("Please wait...")
+            progress.setCancelable(false)
+            progress.show()
         }
 
         if (state.success) {
-            Toast.makeText(activity, "username: ${state.username}", Toast.LENGTH_SHORT).show()
+            progress?.dismiss()
+            router.pushController(RouterTransaction.with(HomeController())
+                .pushChangeHandler(HorizontalChangeHandler())
+                .popChangeHandler(HorizontalChangeHandler()))
         }
     }
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup): View {

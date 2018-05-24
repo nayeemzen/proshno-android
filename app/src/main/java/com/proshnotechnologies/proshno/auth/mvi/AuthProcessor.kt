@@ -11,9 +11,12 @@ class AuthProcessor @Inject constructor(val authRepository: AuthRepository)
     : MviProcessor<AuthAction, Observable<AuthResult>> {
     override fun process(action: AuthAction): Observable<AuthResult> {
         return when (action) {
-            is SignInAction -> authRepository.signIn(action.username, action.password)
-            is SignUpAction -> authRepository.signUp(action.username, action.password,
-                action.inviteCode)
+            is SignInAction -> authRepository
+                .signIn(action.username, action.password)
+                .startWith(AuthResult.InFlight)
+            is SignUpAction -> authRepository
+                .signUp(action.username, action.password, action.inviteCode)
+                .startWith(AuthResult.InFlight)
         }
     }
 }

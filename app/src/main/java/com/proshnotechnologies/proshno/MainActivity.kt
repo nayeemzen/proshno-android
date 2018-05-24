@@ -7,12 +7,15 @@ import com.bluelinelabs.conductor.Conductor
 import com.bluelinelabs.conductor.Router
 import com.bluelinelabs.conductor.RouterTransaction
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler
+import com.google.firebase.auth.FirebaseAuth
 import com.proshnotechnologies.proshno.auth.ui.SignInController
+import com.proshnotechnologies.proshno.home.ui.HomeController
 import kotlinx.android.synthetic.main.activity_main.controller_container
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper
 
 class MainActivity : AppCompatActivity() {
     private lateinit var router: Router
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,7 +24,13 @@ class MainActivity : AppCompatActivity() {
 
         router = Conductor.attachRouter(this, controller_container, savedInstanceState)
         if (!router.hasRootController()) {
-            router.setRoot(RouterTransaction.with(SignInController())
+            val controller = if (auth.currentUser == null) {
+                SignInController()
+            } else {
+                HomeController()
+            }
+
+            router.setRoot(RouterTransaction.with(controller)
                 .pushChangeHandler(HorizontalChangeHandler())
                 .popChangeHandler(HorizontalChangeHandler()))
         }

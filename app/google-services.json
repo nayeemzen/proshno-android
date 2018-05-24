@@ -1,0 +1,59 @@
+{
+  "project_info": {
+    "project_number": "676636598199",
+    "firebase_url": "https://proshno-development.firebaseio.com",
+    "project_id": "proshno-development",
+    "storage_bucket": "proshno-development.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:676636598199:android:7fd8a4803a5033ba",
+        "android_client_info": {
+          "package_name": "com.proshnotechnologies.proshno"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "676636598199-eb2ehj4cvnt1832r6cckahkeopesfl84.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.proshnotechnologies.proshno",
+            "certificate_hash": "19a4226c240e2dd69fd96bad651dcdf7656a33cb"
+          }
+        },
+        {
+          "client_id": "676636598199-22brdn8fmedmscbtd5u4jf7nt69o7cuf.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "676636598199-22brdn8fmedmscbtd5u4jf7nt69o7cuf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDPUxC13wGQKqH-HBRGh-fb_VajiElSeRQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "676636598199-22brdn8fmedmscbtd5u4jf7nt69o7cuf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
