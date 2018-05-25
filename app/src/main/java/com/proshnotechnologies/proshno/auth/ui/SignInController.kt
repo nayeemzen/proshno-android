@@ -62,7 +62,7 @@ class SignInController : Controller(), MviView<AuthIntent, AuthViewState> {
 
         if (state.success) {
             progress?.dismiss()
-            router.pushController(RouterTransaction.with(HomeController())
+            router.setRoot(RouterTransaction.with(HomeController())
                 .pushChangeHandler(HorizontalChangeHandler())
                 .popChangeHandler(HorizontalChangeHandler()))
         }
