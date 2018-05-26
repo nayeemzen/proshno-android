@@ -4,9 +4,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.bluelinelabs.conductor.Controller
+import com.bluelinelabs.conductor.RouterTransaction
+import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler
 import com.jakewharton.rxbinding2.view.clicks
 import com.proshnotechnologies.proshno.MainActivity
 import com.proshnotechnologies.proshno.R
+import com.proshnotechnologies.proshno.auth.ui.SignInController
 import com.proshnotechnologies.proshno.home.di.DaggerHomeComponent
 import com.proshnotechnologies.proshno.home.mvi.HomeIntent
 import com.proshnotechnologies.proshno.home.mvi.HomeViewModel
@@ -34,6 +37,12 @@ class HomeController : Controller(), MviView<HomeIntent, HomeViewState> {
             it.img_loading.visibility = if (state.inFlight) View.VISIBLE else View.GONE
             it.home_content_layout.visibility = if (state.success) View.VISIBLE else View.INVISIBLE
             it.tv_error_msg.visibility = if (state.error != null) View.VISIBLE else View.GONE
+
+            if (state.signOutSuccess) {
+                router.setRoot(RouterTransaction.with(SignInController())
+                    .pushChangeHandler(HorizontalChangeHandler())
+                    .popChangeHandler(HorizontalChangeHandler()))
+            }
         }
     }
 
