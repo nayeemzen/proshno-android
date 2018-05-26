@@ -1,8 +1,10 @@
 package com.proshnotechnologies.proshno.di
 
 import android.app.Application
+import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides
+import org.threeten.bp.Clock
 import javax.inject.Singleton
 
 @Module
@@ -11,5 +13,11 @@ class AppModule(val application: Application) {
     @Singleton
     fun application(): Application {
         return application
+    }
+
+    @Provides
+    @Singleton
+    fun systemDefaultClock() : Clock {
+        return Clock.systemDefaultZone()
     }
 }

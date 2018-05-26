@@ -1,7 +1,9 @@
 package com.proshnotechnologies.proshno
 
 import android.app.Application
+import com.jakewharton.threetenabp.AndroidThreeTen
 import com.proshnotechnologies.proshno.R.attr
+import com.proshnotechnologies.proshno.di.AppModule
 import com.proshnotechnologies.proshno.di.DaggerSingletonComponent
 import com.proshnotechnologies.proshno.di.SingletonComponent
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig
@@ -16,13 +18,20 @@ class ProshnoApp : Application() {
         super.onCreate()
         initiCalligraphy()
         initTimber()
+        init310Abp()
         initDagger()
+    }
+
+    private fun init310Abp() {
+        AndroidThreeTen.init(this)
     }
 
     fun singletonComponent() = singletonComponent
 
     private fun initDagger() {
-        singletonComponent = DaggerSingletonComponent.builder().build()
+        singletonComponent = DaggerSingletonComponent.builder()
+            .appModule(AppModule(this))
+            .build()
     }
 
     private fun initTimber() {

@@ -11,9 +11,9 @@ import io.reactivex.subjects.PublishSubject
 import javax.inject.Inject
 
 class AuthViewModel @Inject constructor(
-    val authProcessor: AuthProcessor,
-    val authStateReducer: AuthStateReducer) : MviViewModel<AuthIntent, AuthViewState> {
-
+    private val authProcessor: AuthProcessor,
+    private val authStateReducer: AuthStateReducer
+) : MviViewModel<AuthIntent, AuthViewState> {
     private val intentsSubject = PublishSubject.create<AuthIntent>()
     private val statesObservable by lazy {
         intentsSubject

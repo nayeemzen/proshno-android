@@ -26,12 +26,12 @@ import javax.inject.Inject
 import android.app.ProgressDialog
 import com.bluelinelabs.conductor.RouterTransaction
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler
+import com.proshnotechnologies.proshno.MainActivity
 import com.proshnotechnologies.proshno.home.ui.HomeController
 import timber.log.Timber
 
 class SignInController : Controller(), MviView<AuthIntent, AuthViewState> {
     @Inject lateinit var viewModel: AuthViewModel
-    private lateinit var layout: View
     private val disposables = CompositeDisposable()
     private var progress : ProgressDialog? = null
 
@@ -45,10 +45,10 @@ class SignInController : Controller(), MviView<AuthIntent, AuthViewState> {
             .addTo(disposables)
     }
 
-    private fun signInIntent(): Observable<AuthIntent> = layout.btn_login.clicks().map {
+    private fun signInIntent(): Observable<AuthIntent> = view!!.btn_login.clicks().map {
         SignInIntent(
-            username = layout.et_username.text.toString(),
-            password = layout.et_password.text.toString())
+            username = view!!.et_username.text.toString(),
+            password = view!!.et_password.text.toString())
     }
 
     override fun render(state: AuthViewState) {
@@ -74,14 +74,22 @@ class SignInController : Controller(), MviView<AuthIntent, AuthViewState> {
         }
     }
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup): View {
-        layout = inflater.inflate(R.layout.login, container, false)
+        val layout = inflater.inflate(R.layout.login, container, false)
         layout.et_password.transformationMethod = PasswordTransformationMethod()
-        layout.tv_no_account.setOnClickListener {
-        }
-
-        DaggerAuthComponent.builder().build().inject(this)
-        bindIntents()
+        layout.tv_no_account.setOnClickListener {}
+        DaggerAuthComponent.builder()
+            .singletonComponent((activity as MainActivity).singletonComponent())
+            .build()
+            .inject(this)
         return layout
+    }
+
+    override fun onAttach(view: View) {
+        bindIntents()
+    }
+
+    override fun onDetach(view: View) {
+        disposables.clear()
     }
 
     override fun onDestroy() {

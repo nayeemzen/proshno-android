@@ -9,7 +9,6 @@ data class AuthViewState(
     val username : String
 ) : MviViewState {
     companion object {
-        fun Initial() = AuthViewState(false, false, null,
-            "")
+        fun Initial() = AuthViewState(false, false, null, "")
     }
 }

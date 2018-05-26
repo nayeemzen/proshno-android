@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import com.bluelinelabs.conductor.Conductor
+import com.bluelinelabs.conductor.Controller
 import com.bluelinelabs.conductor.Router
 import com.bluelinelabs.conductor.RouterTransaction
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler
@@ -12,10 +13,13 @@ import com.proshnotechnologies.proshno.auth.ui.SignInController
 import com.proshnotechnologies.proshno.home.ui.HomeController
 import kotlinx.android.synthetic.main.activity_main.controller_container
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper
+import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
     private lateinit var router: Router
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val auth: FirebaseAuth by lazy {
+        singletonComponent().firebaseAuth()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,7 +28,7 @@ class MainActivity : AppCompatActivity() {
 
         router = Conductor.attachRouter(this, controller_container, savedInstanceState)
         if (!router.hasRootController()) {
-            val controller = if (auth.currentUser == null) {
+            val controller : Controller = if (auth.currentUser == null) {
                 SignInController()
             } else {
                 HomeController()
@@ -46,7 +50,5 @@ class MainActivity : AppCompatActivity() {
         super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase))
     }
 
-    fun singletonComponent() {
-        (application as ProshnoApp).singletonComponent()
-    }
+    fun singletonComponent() = (application as ProshnoApp).singletonComponent()
 }
