@@ -40,6 +40,7 @@ dependencies {
   implementation 'com.google.firebase:firebase-database:16.0.1'
   implementation 'com.google.firebase:firebase-auth:16.0.1'
 
+  implementation 'com.github.tcking:giraffeplayer2:0.1.19'
   implementation 'com.jakewharton.timber:timber:4.7.0'
   implementation 'uk.co.chrisjenx:calligraphy:2.3.0'
   implementation 'com.bluelinelabs:conductor:2.1.4'
