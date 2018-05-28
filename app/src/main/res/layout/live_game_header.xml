@@ -1,5 +1,5 @@
 <android.support.constraint.ConstraintLayout
-    android:id="@+id/video_overlay_layout"
+    android:id="@+id/live_game_header_layout"
     android:layout_marginTop="12dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
