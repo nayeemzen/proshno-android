@@ -6,8 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import com.bluelinelabs.conductor.Controller
 import com.proshnotechnologies.proshno.R
-import kotlinx.android.synthetic.main.live_game.view.video_overlay_layout
-import kotlinx.android.synthetic.main.live_game.view.video_view
+import kotlinx.android.synthetic.main.live_game_container.view.video_view
+import kotlinx.android.synthetic.main.live_game_header.view.video_overlay_layout
 import tcking.github.com.giraffeplayer2.GiraffePlayer
 import tcking.github.com.giraffeplayer2.VideoInfo
 import tcking.github.com.giraffeplayer2.VideoInfo.AR_ASPECT_FILL_PARENT
