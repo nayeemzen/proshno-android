@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <dimen name="video_view_container_card_width">80dp</dimen>
+  <dimen name="video_view_container_card_height">80dp</dimen>
+  <dimen name="video_view_container_card_margin_top">20dp</dimen>
+  <dimen name="video_view_container_card_radius">40dp</dimen>
+  <dimen name="live_game_container_margin_left">12dp</dimen>
+  <dimen name="live_game_container_margin_right">12dp</dimen>
+  <dimen name="live_game_container_margin_top">90dp</dimen>
+  <dimen name="live_game_container_padding_bottom">25dp</dimen>
+</resources>
