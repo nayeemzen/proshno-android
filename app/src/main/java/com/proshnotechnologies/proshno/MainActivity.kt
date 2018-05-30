@@ -10,11 +10,9 @@ import com.bluelinelabs.conductor.RouterTransaction
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler
 import com.google.firebase.auth.FirebaseAuth
 import com.proshnotechnologies.proshno.auth.ui.SignInController
-import com.proshnotechnologies.proshno.home.ui.HomeController
-import com.proshnotechnologies.proshno.live.LiveGameController
+import com.proshnotechnologies.proshno.live.ui.LiveGameController
 import kotlinx.android.synthetic.main.activity_main.controller_container
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper
-import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
     private lateinit var router: Router

@@ -1,18 +1,23 @@
 package com.proshnotechnologies.proshno.auth.ui
 
+import android.app.ProgressDialog
 import android.text.method.PasswordTransformationMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import com.bluelinelabs.conductor.Controller
+import com.bluelinelabs.conductor.RouterTransaction
+import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler
 import com.jakewharton.rxbinding2.view.clicks
+import com.proshnotechnologies.proshno.MainActivity
 import com.proshnotechnologies.proshno.R
 import com.proshnotechnologies.proshno.auth.di.DaggerAuthComponent
 import com.proshnotechnologies.proshno.auth.mvi.AuthIntent
 import com.proshnotechnologies.proshno.auth.mvi.AuthIntent.SignInIntent
 import com.proshnotechnologies.proshno.auth.mvi.AuthViewModel
 import com.proshnotechnologies.proshno.auth.mvi.AuthViewState
+import com.proshnotechnologies.proshno.home.ui.HomeController
 import com.proshnotechnologies.proshno.mvi.MviView
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -23,32 +28,26 @@ import kotlinx.android.synthetic.main.login.view.et_password
 import kotlinx.android.synthetic.main.login.view.et_username
 import kotlinx.android.synthetic.main.login.view.tv_no_account
 import javax.inject.Inject
-import android.app.ProgressDialog
-import com.bluelinelabs.conductor.RouterTransaction
-import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler
-import com.proshnotechnologies.proshno.MainActivity
-import com.proshnotechnologies.proshno.home.ui.HomeController
-import timber.log.Timber
 
 class SignInController : Controller(), MviView<AuthIntent, AuthViewState> {
     @Inject lateinit var viewModel: AuthViewModel
     private val disposables = CompositeDisposable()
     private var progress : ProgressDialog? = null
 
-    override fun intents(): Observable<AuthIntent> = signInIntent()
+    override fun intents(view: View): Observable<AuthIntent> = signInIntent(view)
 
-    private fun bindIntents() {
-        viewModel.processIntents(intents())
+    private fun bindIntents(view: View) {
+        viewModel.processIntents(intents(view))
         viewModel.states()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(this::render)
             .addTo(disposables)
     }
 
-    private fun signInIntent(): Observable<AuthIntent> = view!!.btn_login.clicks().map {
+    private fun signInIntent(view: View): Observable<AuthIntent> = view.btn_login.clicks().map {
         SignInIntent(
-            username = view!!.et_username.text.toString(),
-            password = view!!.et_password.text.toString())
+            username = view.et_username.text.toString(),
+            password = view.et_password.text.toString())
     }
 
     override fun render(state: AuthViewState) {
@@ -85,7 +84,7 @@ class SignInController : Controller(), MviView<AuthIntent, AuthViewState> {
     }
 
     override fun onAttach(view: View) {
-        bindIntents()
+        bindIntents(view)
     }
 
     override fun onDetach(view: View) {

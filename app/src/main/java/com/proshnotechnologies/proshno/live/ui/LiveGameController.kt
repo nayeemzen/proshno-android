@@ -1,6 +1,5 @@
-package com.proshnotechnologies.proshno.live
+package com.proshnotechnologies.proshno.live.ui
 
-import android.content.res.Resources
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
@@ -13,11 +12,28 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
+import android.widget.Toast
 import com.bluelinelabs.conductor.Controller
 import com.bluelinelabs.conductor.Controller.RetainViewMode.RETAIN_DETACH
+import com.jakewharton.rxbinding2.view.clicks
 import com.proshnotechnologies.proshno.BuildConfig
+import com.proshnotechnologies.proshno.MainActivity
 import com.proshnotechnologies.proshno.R
 import com.proshnotechnologies.proshno.R.id
+import com.proshnotechnologies.proshno.live.di.DaggerLiveGameComponent
+import com.proshnotechnologies.proshno.live.mvi.LiveGameIntent
+import com.proshnotechnologies.proshno.live.mvi.LiveGameIntent.ChooseAnswerIntent
+import com.proshnotechnologies.proshno.live.mvi.LiveGameViewModel
+import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState
+import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ChooseAnswer
+import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ReceivedAnswer
+import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ReceivedQuestion
+import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ReceivedStreamStats
+import com.proshnotechnologies.proshno.mvi.MviView
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
 import kotlinx.android.synthetic.main.live_game_container.view.live_game_container_layout
 import kotlinx.android.synthetic.main.live_game_container.view.option_1
 import kotlinx.android.synthetic.main.live_game_container.view.option_2
@@ -32,15 +48,75 @@ import tcking.github.com.giraffeplayer2.GiraffePlayer
 import tcking.github.com.giraffeplayer2.VideoInfo
 import tcking.github.com.giraffeplayer2.VideoInfo.AR_ASPECT_FILL_PARENT
 import tcking.github.com.giraffeplayer2.VideoView
+import javax.inject.Inject
 
-class LiveGameController : Controller() {
+class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewState> {
+    @Inject lateinit var viewModel: LiveGameViewModel
     private lateinit var player: GiraffePlayer
     private var isExpanded = false
+    private val disposables: CompositeDisposable = CompositeDisposable()
+
+    override fun intents(view: View): Observable<LiveGameIntent> = Observable.merge(
+        initialIntent(), chooseAnswerIntent(view))
+
+    override fun render(state: LiveGameViewState) {
+        if (state.isFullScreen && !isExpanded) {
+            isExpanded = true
+            expandVideo()
+        } else if (!state.isFullScreen && isExpanded) {
+            isExpanded = false
+            shrinkVideo()
+        }
+
+        when (state) {
+            is ChooseAnswer -> {
+                if (state.inFlight) {
+                    Toast.makeText(activity, "Hello babe!", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            is ReceivedQuestion -> {
+
+            }
+
+            is ReceivedAnswer -> {
+
+            }
+
+            is ReceivedStreamStats -> {
+
+            }
+        }
+    }
+
+    private fun bindIntents(view: View) {
+        viewModel.states()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(this::render)
+            .addTo(disposables)
+        viewModel.processIntents(intents(view))
+    }
+
+    private fun chooseAnswerIntent(view: View): Observable<LiveGameIntent> {
+        return Observable.merge(
+            view.option_1.clicks().map { 1 },
+            view.option_2.clicks().map { 2 },
+            view.option_3.clicks().map { 3 })
+            .take(1)
+            .map { ChooseAnswerIntent(1, it.toLong()) }
+    }
+
+    private fun initialIntent() = Observable.just(LiveGameIntent.InitialIntent)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup): View {
         val layout = inflater.inflate(R.layout.live_game, container, false)
-        initVideoPlayer(layout)
         retainViewMode = RETAIN_DETACH
+        DaggerLiveGameComponent.builder()
+            .singletonComponent((activity as MainActivity).singletonComponent())
+            .build()
+            .inject(this)
+        initVideoPlayer(layout)
+        bindIntents(layout)
         return layout
     }
 
@@ -62,7 +138,11 @@ class LiveGameController : Controller() {
         }
     }
 
-    override fun onDestroy() {
+    override fun onDestroyView(view: View) {
+        if (!disposables.isDisposed) {
+            disposables.dispose()
+        }
+
         if (!player.isReleased) {
             player.release()
         }
@@ -138,35 +218,35 @@ class LiveGameController : Controller() {
             .setShowTopBar(false)
     }
 
-    val videoContainerWidth: Int by lazy {
+    private val videoContainerWidth: Int by lazy {
         activity!!.resources.getDimension(R.dimen.video_view_container_card_width).toInt()
     }
 
-    val videoContainerHeight: Int by lazy {
+    private val videoContainerHeight: Int by lazy {
         activity!!.resources.getDimension(R.dimen.video_view_container_card_height).toInt()
     }
 
-    val videoContainerTopMargin: Int by lazy {
+    private val videoContainerTopMargin: Int by lazy {
         activity!!.resources.getDimension(R.dimen.video_view_container_card_margin_top).toInt()
     }
 
-    val videoContainerRadius: Float by lazy {
+    private val videoContainerRadius: Float by lazy {
         activity!!.resources.getDimension(R.dimen.video_view_container_card_radius)
     }
 
-    val gameContainerLeftMargin: Int by lazy {
+    private val gameContainerLeftMargin: Int by lazy {
         activity!!.resources.getDimension(R.dimen.live_game_container_margin_left).toInt()
     }
 
-    val gameContainerRightMargin: Int by lazy {
+    private val gameContainerRightMargin: Int by lazy {
         activity!!.resources.getDimension(R.dimen.live_game_container_margin_right).toInt()
     }
 
-    val gameContainerTopMargin: Int by lazy {
+    private val gameContainerTopMargin: Int by lazy {
         activity!!.resources.getDimension(R.dimen.live_game_container_margin_top).toInt()
     }
 
-    val gameContainerBottomPadding: Int by lazy {
+    private val gameContainerBottomPadding: Int by lazy {
         activity!!.resources.getDimension(R.dimen.live_game_container_padding_bottom).toInt()
     }
 

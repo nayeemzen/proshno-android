@@ -29,8 +29,8 @@ class HomeController : Controller(), MviView<HomeIntent, HomeViewState> {
     @Inject lateinit var viewModel: HomeViewModel
     private val disposables: CompositeDisposable = CompositeDisposable()
 
-    override fun intents(): Observable<HomeIntent> =
-        Observable.merge(initialIntent(), signOutIntent())
+    override fun intents(view: View): Observable<HomeIntent> =
+        Observable.merge(initialIntent(), signOutIntent(view))
 
     override fun render(state: HomeViewState) {
         view?.let {
@@ -52,12 +52,12 @@ class HomeController : Controller(), MviView<HomeIntent, HomeViewState> {
      * items. So if the intent is processed before the rendering is registered, the view state
      * won't be reflected correctly.
      */
-    private fun bindIntents() {
+    private fun bindIntents(view: View) {
         viewModel.states()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(this::render)
             .addTo(disposables)
-        viewModel.processIntents(intents())
+        viewModel.processIntents(intents(view))
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup): View {
@@ -70,7 +70,7 @@ class HomeController : Controller(), MviView<HomeIntent, HomeViewState> {
     }
 
     override fun onAttach(view: View) {
-        bindIntents()
+        bindIntents(view)
     }
 
     override fun onDetach(view: View) {
@@ -85,6 +85,6 @@ class HomeController : Controller(), MviView<HomeIntent, HomeViewState> {
         return Observable.just(HomeIntent.InitialIntent)
     }
 
-    private fun signOutIntent() : Observable<HomeIntent> =
-        view!!.img_power_button.clicks().map { HomeIntent.SignOutIntent }
+    private fun signOutIntent(view: View): Observable<HomeIntent> =
+        view.img_power_button.clicks().map { HomeIntent.SignOutIntent }
 }
