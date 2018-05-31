@@ -16,8 +16,8 @@ class LiveGameProcessor @Inject constructor(private val liveGameRepository: Live
             .onErrorReturn { ConnectToGameFailure(it) }
 
         is ChooseAnswerAction -> liveGameRepository
-            .chooseAnswer(action.questionId, action.choiceId)
-            .startWith(LiveGameResult.ChooseAnswerInFlight(action.choiceId))
-            .onErrorReturn { LiveGameResult.ChooseAnswerFailure(it, action.choiceId) }
+            .chooseAnswer(action.questionId, action.choice)
+            .startWith(LiveGameResult.ChooseAnswerInFlight(action.choice))
+            .onErrorReturn { LiveGameResult.ChooseAnswerFailure(it, action.choice) }
     }
 }

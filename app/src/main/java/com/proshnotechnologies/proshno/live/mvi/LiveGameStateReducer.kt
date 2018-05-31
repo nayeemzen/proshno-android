@@ -4,6 +4,7 @@ import com.proshnotechnologies.proshno.live.mvi.LiveGameResult.ChooseAnswerFailu
 import com.proshnotechnologies.proshno.live.mvi.LiveGameResult.ChooseAnswerInFlight
 import com.proshnotechnologies.proshno.live.mvi.LiveGameResult.ChooseAnswerSuccess
 import com.proshnotechnologies.proshno.live.mvi.LiveGameResult.ReceivedAnswer
+import com.proshnotechnologies.proshno.live.mvi.LiveGameResult.ReceivedExpandScreen
 import com.proshnotechnologies.proshno.live.mvi.LiveGameResult.ReceivedQuestion
 import com.proshnotechnologies.proshno.live.mvi.LiveGameResult.ReceivedStreamStats
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ChooseAnswer
@@ -17,23 +18,24 @@ class LiveGameStateReducer @Inject constructor(): MviStateReducer<LiveGameResult
             inFlight = true,
             success = false,
             error = null,
-            choiceId = result.choiceId
+            choice = result.choice
         )
 
         is ChooseAnswerSuccess -> ChooseAnswer(
             inFlight = false,
             success = true,
             error = null,
-            choiceId = result.choiceId
+            choice = result.choice
         )
 
         is ChooseAnswerFailure -> ChooseAnswer(
             inFlight = false,
             success = false,
             error = result.error,
-            choiceId = result.choiceId
+            choice = result.choice
         )
 
+        is ReceivedExpandScreen -> LiveGameViewState.ReceivedExpandScreen
         is ReceivedQuestion -> LiveGameViewState.ReceivedQuestion(result.question)
         is ReceivedAnswer -> LiveGameViewState.ReceivedAnswer(result.question)
         is ReceivedStreamStats -> LiveGameViewState.ReceivedStreamStats(

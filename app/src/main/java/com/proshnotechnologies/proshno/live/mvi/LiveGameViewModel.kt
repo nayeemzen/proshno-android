@@ -20,7 +20,7 @@ class LiveGameViewModel @Inject constructor(
         intentsSubject
             .map(this::mapIntentToAction)
             .subscribeOn(Schedulers.io())
-            .switchMap(processor::process)
+            .flatMap(processor::process)
             .scan(Initial(true), stateReducer::reduce)
     }
 
@@ -33,7 +33,7 @@ class LiveGameViewModel @Inject constructor(
     private fun mapIntentToAction(intent: LiveGameIntent) : LiveGameAction {
         return when(intent) {
             is InitialIntent -> ConnectToLiveGameAction
-            is ChooseAnswerIntent -> ChooseAnswerAction(intent.questionId, intent.choiceId)
+            is ChooseAnswerIntent -> ChooseAnswerAction(intent.questionId, intent.choice)
         }
     }
 }

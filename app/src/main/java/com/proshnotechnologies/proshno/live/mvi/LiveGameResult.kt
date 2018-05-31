@@ -4,9 +4,9 @@ import com.proshnotechnologies.proshno.live.domain.Question
 import com.proshnotechnologies.proshno.mvi.MviResult
 
 sealed class LiveGameResult : MviResult {
-    data class ChooseAnswerInFlight(val choiceId: Long) : LiveGameResult()
-    data class ChooseAnswerSuccess(val choiceId: Long) : LiveGameResult()
-    data class ChooseAnswerFailure(val error: Throwable, val choiceId: Long) : LiveGameResult()
+    data class ChooseAnswerInFlight(val choice: Int) : LiveGameResult()
+    data class ChooseAnswerSuccess(val choice: Int) : LiveGameResult()
+    data class ChooseAnswerFailure(val error: Throwable, val choice: Int) : LiveGameResult()
 
     object ConnectToGameInFlight : LiveGameResult()
     object ConnectToGameSuccess : LiveGameResult()
@@ -15,4 +15,5 @@ sealed class LiveGameResult : MviResult {
     data class ReceivedQuestion(val question: Question) : LiveGameResult()
     data class ReceivedAnswer(val question: Question) : LiveGameResult()
     data class ReceivedStreamStats(val numLiveViewers: Int) : LiveGameResult()
+    object ReceivedExpandScreen : LiveGameResult()
 }

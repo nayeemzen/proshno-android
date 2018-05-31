@@ -4,7 +4,7 @@ import com.proshnotechnologies.proshno.live.mvi.LiveGameResult
 import io.reactivex.Observable
 
 interface LiveGameRepository {
-    fun chooseAnswer(questionId: Long, choiceId: Long) : Observable<LiveGameResult>
+    fun chooseAnswer(questionId: String, choice: Int) : Observable<LiveGameResult>
 
     fun connect() : Observable<LiveGameResult>
 }

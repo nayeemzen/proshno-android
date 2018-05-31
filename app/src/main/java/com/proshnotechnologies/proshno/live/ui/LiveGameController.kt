@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
@@ -21,12 +22,14 @@ import com.proshnotechnologies.proshno.MainActivity
 import com.proshnotechnologies.proshno.R
 import com.proshnotechnologies.proshno.R.id
 import com.proshnotechnologies.proshno.live.di.DaggerLiveGameComponent
+import com.proshnotechnologies.proshno.live.domain.Question
 import com.proshnotechnologies.proshno.live.mvi.LiveGameIntent
 import com.proshnotechnologies.proshno.live.mvi.LiveGameIntent.ChooseAnswerIntent
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewModel
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ChooseAnswer
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ReceivedAnswer
+import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ReceivedExpandScreen
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ReceivedQuestion
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ReceivedStreamStats
 import com.proshnotechnologies.proshno.mvi.MviView
@@ -38,11 +41,13 @@ import kotlinx.android.synthetic.main.live_game_container.view.live_game_contain
 import kotlinx.android.synthetic.main.live_game_container.view.option_1
 import kotlinx.android.synthetic.main.live_game_container.view.option_2
 import kotlinx.android.synthetic.main.live_game_container.view.option_3
+import kotlinx.android.synthetic.main.live_game_container.view.tv_question
 import kotlinx.android.synthetic.main.live_game_container.view.video_view
 import kotlinx.android.synthetic.main.live_game_container.view.video_view_container_card
 import kotlinx.android.synthetic.main.live_game_header.view.img_logo
 import kotlinx.android.synthetic.main.live_game_header.view.live_game_header_layout
 import kotlinx.android.synthetic.main.live_game_question.view.tv_num_answered
+import kotlinx.android.synthetic.main.live_game_question.view.tv_option
 import tcking.github.com.giraffeplayer2.DefaultPlayerListener
 import tcking.github.com.giraffeplayer2.GiraffePlayer
 import tcking.github.com.giraffeplayer2.VideoInfo
@@ -53,8 +58,12 @@ import javax.inject.Inject
 class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewState> {
     @Inject lateinit var viewModel: LiveGameViewModel
     private lateinit var player: GiraffePlayer
-    private var isExpanded = false
     private val disposables: CompositeDisposable = CompositeDisposable()
+    // TODO(zen): Feels like a hack to keep mutable state in controller,
+    // should think of something better.
+    private var isExpanded = false
+    private var choice: Int? = null
+    private var currentQuestion: Question? = null
 
     override fun intents(view: View): Observable<LiveGameIntent> = Observable.merge(
         initialIntent(), chooseAnswerIntent(view))
@@ -70,21 +79,63 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
 
         when (state) {
             is ChooseAnswer -> {
+                if (choice != null) {
+                    return
+                }
+
+                choice = state.choice
+                val option = when {
+                    state.choice == 1 -> view?.option_1
+                    state.choice == 2 -> view?.option_2
+                    else -> view?.option_3
+                }
+
                 if (state.inFlight) {
-                    Toast.makeText(activity, "Hello babe!", Toast.LENGTH_SHORT).show()
+                    option?.setBackgroundResource(R.drawable.rounded_rectangle_yellow)
+                } else if (state.error != null) {
+                    option?.setBackgroundResource(R.drawable.rounded_rectangle)
+                    Toast.makeText(activity, "Error: please try again", Toast.LENGTH_SHORT).show()
                 }
             }
 
             is ReceivedQuestion -> {
-
+                view?.let {
+                    it.tv_question.text = state.question.question
+                    it.option_1.tv_option.text = state.question.choices[0].text
+                    it.option_2.tv_option.text = state.question.choices[1].text
+                    it.option_3.tv_option.text = state.question.choices[2].text
+                    it.option_1.tv_num_answered.visibility = INVISIBLE
+                    it.option_2.tv_num_answered.visibility = INVISIBLE
+                    it.option_3.tv_num_answered.visibility = INVISIBLE
+                    currentQuestion = state.question
+                }
             }
 
             is ReceivedAnswer -> {
+                choice = null
+                currentQuestion = null
+                view?.let {
+                    it.option_1.tv_num_answered.text = state.question.choices[0].numAnswered.toString()
+                    it.option_2.tv_num_answered.text = state.question.choices[1].numAnswered.toString()
+                    it.option_3.tv_num_answered.text = state.question.choices[2].numAnswered.toString()
+                    it.option_1.tv_num_answered.visibility = VISIBLE
+                    it.option_2.tv_num_answered.visibility = VISIBLE
+                    it.option_3.tv_num_answered.visibility = VISIBLE
 
+                    val option = when (state.question.answer) {
+                        0 -> it.option_1
+                        1 -> it.option_2
+                        2 -> it.option_3
+                        else -> {
+                            throw IllegalArgumentException("Invalid option: ${state.question.answer}")
+                        }
+                    }
+                    option?.setBackgroundResource(R.drawable.rounded_rectangle_green)
+                }
             }
 
             is ReceivedStreamStats -> {
-
+                TODO("Implement stats")
             }
         }
     }
@@ -102,8 +153,8 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
             view.option_1.clicks().map { 1 },
             view.option_2.clicks().map { 2 },
             view.option_3.clicks().map { 3 })
-            .take(1)
-            .map { ChooseAnswerIntent(1, it.toLong()) }
+            .takeWhile { choice == null && currentQuestion != null }
+            .map { ChooseAnswerIntent(currentQuestion!!.questionId, it) }
     }
 
     private fun initialIntent() = Observable.just(LiveGameIntent.InitialIntent)
@@ -122,9 +173,6 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
 
     override fun onAttach(view: View) {
         view.live_game_header_layout.bringToFront()
-        view.option_1.tv_num_answered.visibility = INVISIBLE
-        view.option_2.tv_num_answered.visibility = INVISIBLE
-        view.option_3.tv_num_answered.visibility = INVISIBLE
         if (BuildConfig.DEBUG) {
             view.live_game_header_layout.img_logo.setOnClickListener {
                 if (isExpanded) {
