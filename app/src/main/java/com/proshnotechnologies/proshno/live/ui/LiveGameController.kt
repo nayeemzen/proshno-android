@@ -22,14 +22,12 @@ import com.proshnotechnologies.proshno.MainActivity
 import com.proshnotechnologies.proshno.R
 import com.proshnotechnologies.proshno.R.id
 import com.proshnotechnologies.proshno.live.di.DaggerLiveGameComponent
-import com.proshnotechnologies.proshno.live.domain.Question
 import com.proshnotechnologies.proshno.live.mvi.LiveGameIntent
 import com.proshnotechnologies.proshno.live.mvi.LiveGameIntent.ChooseAnswerIntent
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewModel
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ChooseAnswer
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ReceivedAnswer
-import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ReceivedExpandScreen
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ReceivedQuestion
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ReceivedStreamStats
 import com.proshnotechnologies.proshno.mvi.MviView
@@ -59,11 +57,7 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
     @Inject lateinit var viewModel: LiveGameViewModel
     private lateinit var player: GiraffePlayer
     private val disposables: CompositeDisposable = CompositeDisposable()
-    // TODO(zen): Feels like a hack to keep mutable state in controller,
-    // should think of something better.
     private var isExpanded = false
-    private var choice: Int? = null
-    private var currentQuestion: Question? = null
 
     override fun intents(view: View): Observable<LiveGameIntent> = Observable.merge(
         initialIntent(), chooseAnswerIntent(view))
@@ -79,11 +73,6 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
 
         when (state) {
             is ChooseAnswer -> {
-                if (choice != null) {
-                    return
-                }
-
-                choice = state.choice
                 val option = when {
                     state.choice == 1 -> view?.option_1
                     state.choice == 2 -> view?.option_2
@@ -101,19 +90,17 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
             is ReceivedQuestion -> {
                 view?.let {
                     it.tv_question.text = state.question.question
+                    it.tv_question.tag = state.question.questionId
                     it.option_1.tv_option.text = state.question.choices[0].text
                     it.option_2.tv_option.text = state.question.choices[1].text
                     it.option_3.tv_option.text = state.question.choices[2].text
                     it.option_1.tv_num_answered.visibility = INVISIBLE
                     it.option_2.tv_num_answered.visibility = INVISIBLE
                     it.option_3.tv_num_answered.visibility = INVISIBLE
-                    currentQuestion = state.question
                 }
             }
 
             is ReceivedAnswer -> {
-                choice = null
-                currentQuestion = null
                 view?.let {
                     it.option_1.tv_num_answered.text = state.question.choices[0].numAnswered.toString()
                     it.option_2.tv_num_answered.text = state.question.choices[1].numAnswered.toString()
@@ -153,8 +140,9 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
             view.option_1.clicks().map { 1 },
             view.option_2.clicks().map { 2 },
             view.option_3.clicks().map { 3 })
-            .takeWhile { choice == null && currentQuestion != null }
-            .map { ChooseAnswerIntent(currentQuestion!!.questionId, it) }
+            .map { ChooseAnswerIntent(view.tv_question.tag as String, it) }
+            .distinctUntilChanged { it -> it.questionId }
+            .cast(LiveGameIntent::class.java)
     }
 
     private fun initialIntent() = Observable.just(LiveGameIntent.InitialIntent)
