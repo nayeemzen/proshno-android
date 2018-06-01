@@ -37,7 +37,7 @@ class LiveGameStateReducer @Inject constructor(): MviStateReducer<LiveGameResult
 
         is ReceivedExpandScreen -> LiveGameViewState.ReceivedExpandScreen
         is ReceivedQuestion -> LiveGameViewState.ReceivedQuestion(result.question)
-        is ReceivedAnswer -> LiveGameViewState.ReceivedAnswer(result.question)
+        is ReceivedAnswer -> LiveGameViewState.ReceivedAnswer(result.question, result.userAnswer)
         is ReceivedStreamStats -> LiveGameViewState.ReceivedStreamStats(
             previousState.isFullScreen, result.numLiveViewers)
 

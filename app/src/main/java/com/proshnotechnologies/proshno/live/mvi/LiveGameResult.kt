@@ -13,7 +13,7 @@ sealed class LiveGameResult : MviResult {
     data class ConnectToGameFailure(val error: Throwable): LiveGameResult()
 
     data class ReceivedQuestion(val question: Question) : LiveGameResult()
-    data class ReceivedAnswer(val question: Question) : LiveGameResult()
+    data class ReceivedAnswer(val question: Question, val userAnswer: Int?) : LiveGameResult()
     data class ReceivedStreamStats(val numLiveViewers: Int) : LiveGameResult()
     object ReceivedExpandScreen : LiveGameResult()
 }

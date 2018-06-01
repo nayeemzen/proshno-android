@@ -33,6 +33,7 @@ import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ReceivedQuesti
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ReceivedStreamStats
 import com.proshnotechnologies.proshno.mvi.MviView
 import com.proshnotechnologies.proshno.utils.extensions.dp
+import es.dmoral.toasty.Toasty
 import io.github.krtkush.lineartimer.LinearTimer
 import io.github.krtkush.lineartimer.LinearTimer.Builder
 import io.github.krtkush.lineartimer.LinearTimerView
@@ -57,10 +58,12 @@ import tcking.github.com.giraffeplayer2.GiraffePlayer
 import tcking.github.com.giraffeplayer2.VideoInfo
 import tcking.github.com.giraffeplayer2.VideoInfo.AR_ASPECT_FILL_PARENT
 import tcking.github.com.giraffeplayer2.VideoView
+import timber.log.Timber
 import javax.inject.Inject
 
 class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewState> {
     @Inject lateinit var viewModel: LiveGameViewModel
+
     private lateinit var player: GiraffePlayer
     private lateinit var linearTimer: LinearTimer
     private val disposables: CompositeDisposable = CompositeDisposable()
@@ -127,6 +130,14 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
                         }
                     }
                     option?.setBackgroundResource(R.drawable.rounded_rectangle_green)
+                    activity?.let {
+                        if (state.userAnswer == state.question.answer) {
+                            Toasty.success(it, "Correct!").show()
+                        } else {
+                            Toasty.error(it, "Wrong!").show()
+                        }
+                    }
+
                 }
             }
 

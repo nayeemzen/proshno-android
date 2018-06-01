@@ -17,7 +17,10 @@ sealed class LiveGameViewState(val isFullScreen: Boolean) : MviViewState {
 
     data class ReceivedQuestion(val question: Question) : LiveGameViewState(false)
 
-    data class ReceivedAnswer(val question: Question) : LiveGameViewState(false)
+    data class ReceivedAnswer(
+        val question: Question,
+        val userAnswer: Int?
+    ) : LiveGameViewState(false)
 
     data class ReceivedStreamStats(
         private val _isFullScreen: Boolean,

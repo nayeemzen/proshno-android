@@ -11,6 +11,8 @@ import java.util.concurrent.TimeUnit.SECONDS
 import javax.inject.Inject
 
 class FakeLiveGameRepository @Inject constructor(): LiveGameRepository {
+    private var userAnswer: Int? = null
+
     private val question = Question(
         questionId = UUID.randomUUID().toString(),
         question = "Which company initially developed the Android Mobile OS?",
@@ -35,21 +37,25 @@ class FakeLiveGameRepository @Inject constructor(): LiveGameRepository {
     )
 
     private val fixtures = listOf(
-        LiveGameResult.ReceivedQuestion(question.copy(
-            answer = null,
-            choices = question.choices.map { it.copy(numAnswered = null) }
-        )),
-        LiveGameResult.ReceivedAnswer(question),
-        LiveGameResult.ReceivedExpandScreen
+        {
+            LiveGameResult.ReceivedQuestion(question.copy(
+                answer = null,
+                choices = question.choices.map { it.copy(numAnswered = null) }
+            ))
+        },
+        { LiveGameResult.ReceivedAnswer(question, userAnswer) },
+        { LiveGameResult.ReceivedExpandScreen }
     )
 
     override fun chooseAnswer(questionId: String, choice: Int): Observable<LiveGameResult> {
+        userAnswer = choice
         return Observable.just(ChooseAnswerSuccess(choice))
     }
 
     override fun connect(): Observable<LiveGameResult> {
         return Observable.fromIterable(fixtures)
             .concatMap { Observable.just(it).delay(question.duration.seconds, SECONDS) }
+            .map { it() }
             .startWith(LiveGameResult.ConnectToGameSuccess)
     }
 }
