@@ -2,6 +2,7 @@
 <android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:timer="http://schemas.android.com/apk/res-auto"
     android:id="@+id/live_game_container_layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -26,8 +27,23 @@
         android:id="@+id/video_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/colorGreen"
         />
   </android.support.v7.widget.CardView>
+  <io.github.krtkush.lineartimer.LinearTimerView
+      android:id="@+id/linear_timer"
+      android:visibility="gone"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      timer:radius="10dp"
+      android:layout_marginTop="15dp"
+      app:initialColor="@color/colorGray"
+      app:progressColor="@color/colorAccent"
+      timer:strokeWidth="1dp"/>
+
   <TextView
       android:id="@+id/tv_question"
       android:layout_width="match_parent"

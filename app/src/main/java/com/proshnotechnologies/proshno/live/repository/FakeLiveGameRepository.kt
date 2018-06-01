@@ -15,7 +15,7 @@ class FakeLiveGameRepository @Inject constructor(): LiveGameRepository {
         questionId = UUID.randomUUID().toString(),
         question = "Which company initially developed the Android Mobile OS?",
         duration = Duration.ofSeconds(5),
-        answer = 1,
+        answer = 2,
         choices = listOf(
             Choice(
                 questionId = 123456789L,

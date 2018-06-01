@@ -1,5 +1,6 @@
 package com.proshnotechnologies.proshno.live.ui
 
+import android.content.res.Resources
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
@@ -31,10 +32,15 @@ import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ReceivedAnswer
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ReceivedQuestion
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ReceivedStreamStats
 import com.proshnotechnologies.proshno.mvi.MviView
+import com.proshnotechnologies.proshno.utils.extensions.dp
+import io.github.krtkush.lineartimer.LinearTimer
+import io.github.krtkush.lineartimer.LinearTimer.Builder
+import io.github.krtkush.lineartimer.LinearTimerView
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
+import kotlinx.android.synthetic.main.live_game_container.view.linear_timer
 import kotlinx.android.synthetic.main.live_game_container.view.live_game_container_layout
 import kotlinx.android.synthetic.main.live_game_container.view.option_1
 import kotlinx.android.synthetic.main.live_game_container.view.option_2
@@ -56,6 +62,7 @@ import javax.inject.Inject
 class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewState> {
     @Inject lateinit var viewModel: LiveGameViewModel
     private lateinit var player: GiraffePlayer
+    private lateinit var linearTimer: LinearTimer
     private val disposables: CompositeDisposable = CompositeDisposable()
     private var isExpanded = false
 
@@ -88,7 +95,9 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
             }
 
             is ReceivedQuestion -> {
+                linearTimer.startTimer()
                 view?.let {
+                    it.linear_timer.visibility = VISIBLE
                     it.tv_question.text = state.question.question
                     it.tv_question.tag = state.question.questionId
                     it.option_1.tv_option.text = state.question.choices[0].text
@@ -110,9 +119,9 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
                     it.option_3.tv_num_answered.visibility = VISIBLE
 
                     val option = when (state.question.answer) {
-                        0 -> it.option_1
-                        1 -> it.option_2
-                        2 -> it.option_3
+                        1 -> it.option_1
+                        2 -> it.option_2
+                        3 -> it.option_3
                         else -> {
                             throw IllegalArgumentException("Invalid option: ${state.question.answer}")
                         }
@@ -150,6 +159,7 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup): View {
         val layout = inflater.inflate(R.layout.live_game, container, false)
         retainViewMode = RETAIN_DETACH
+        initLinearTimer(layout.linear_timer)
         DaggerLiveGameComponent.builder()
             .singletonComponent((activity as MainActivity).singletonComponent())
             .build()
@@ -157,6 +167,14 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
         initVideoPlayer(layout)
         bindIntents(layout)
         return layout
+    }
+
+    private fun initLinearTimer(linearTimerView: LinearTimerView) {
+        linearTimerView.circleRadiusInDp = linearTimerRadius
+        linearTimer = Builder()
+            .linearTimerView(linearTimerView)
+            .duration(5 * 1000)
+            .build()
     }
 
     override fun onAttach(view: View) {
@@ -186,6 +204,7 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
 
     private fun expandVideo() {
         view?.let {
+            it.linear_timer.visibility = GONE
             it.live_game_container_layout.setPadding(0, 0, 0, 0)
             it.live_game_container_layout.layoutParams = (it.live_game_container_layout
                 .layoutParams as FrameLayout.LayoutParams)
@@ -252,6 +271,13 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
             .setPortraitWhenFullScreen(false)
             .setAspectRatio(AR_ASPECT_FILL_PARENT)
             .setShowTopBar(false)
+    }
+
+    /**
+     * @implNote: This is pretty much a trial-and-error hack.
+     */
+    private val linearTimerRadius: Int by lazy {
+        (Resources.getSystem().displayMetrics.widthPixels.dp / 9) + 1
     }
 
     private val videoContainerWidth: Int by lazy {
