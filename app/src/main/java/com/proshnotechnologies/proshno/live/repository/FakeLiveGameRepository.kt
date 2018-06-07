@@ -1,6 +1,5 @@
 package com.proshnotechnologies.proshno.live.repository
 
-import com.google.firebase.firestore.FirebaseFirestore
 import com.proshnotechnologies.proshno.live.domain.Answer
 import com.proshnotechnologies.proshno.live.domain.Game
 import com.proshnotechnologies.proshno.live.domain.Question
@@ -13,9 +12,7 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit.SECONDS
 import javax.inject.Inject
 
-class FakeLiveGameRepository @Inject constructor(
-    private val firestore: FirebaseFirestore
-): LiveGameRepository {
+class FakeLiveGameRepository @Inject constructor() : LiveGameRepository {
     private val gameId = UUID.randomUUID().toString()
     private var userAnswer: Int? = null
 

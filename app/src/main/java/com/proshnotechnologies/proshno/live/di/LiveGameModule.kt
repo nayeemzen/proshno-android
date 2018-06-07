@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.proshnotechnologies.proshno.live.repository.FakeLiveGameRepository
 import com.proshnotechnologies.proshno.live.repository.LiveGameRepository
+import com.proshnotechnologies.proshno.live.repository.RealLiveGameRepository
 import dagger.Binds
 import dagger.Module
 import javax.inject.Named
@@ -12,7 +13,7 @@ import javax.inject.Named
 @Module
 abstract class LiveGameModule {
     @Binds
-    abstract fun liveGameRepository(repository: FakeLiveGameRepository) : LiveGameRepository
+    abstract fun liveGameRepository(repository: RealLiveGameRepository) : LiveGameRepository
 
     @Module
     companion object {

@@ -5,6 +5,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
+import com.google.firebase.firestore.FirebaseFirestoreSettings.Builder
 
 @Module
 object FirebaseModule {
@@ -16,5 +17,12 @@ object FirebaseModule {
     @JvmStatic
     @Provides
     @Singleton
-    fun firebaseFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
+    fun firebaseFirestore(): FirebaseFirestore {
+        val firestore = FirebaseFirestore.getInstance()
+        firestore.firestoreSettings = Builder()
+            .setPersistenceEnabled(false)
+            .setTimestampsInSnapshotsEnabled(true)
+            .build()
+        return firestore
+    }
 }

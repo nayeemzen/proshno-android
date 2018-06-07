@@ -36,6 +36,7 @@ import com.proshnotechnologies.proshno.utils.extensions.dp
 import es.dmoral.toasty.Toasty
 import io.github.krtkush.lineartimer.LinearTimer
 import io.github.krtkush.lineartimer.LinearTimer.Builder
+import io.github.krtkush.lineartimer.LinearTimerStates.INITIALIZED
 import io.github.krtkush.lineartimer.LinearTimerView
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -98,7 +99,12 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
             }
 
             is ReceivedQuestion -> {
-                linearTimer.startTimer()
+                if (linearTimer.state == INITIALIZED) {
+                    linearTimer.startTimer()
+                } else {
+                    linearTimer.restartTimer()
+                }
+
                 view?.let {
                     it.linear_timer.visibility = VISIBLE
                     it.tv_question.text = state.question.text
