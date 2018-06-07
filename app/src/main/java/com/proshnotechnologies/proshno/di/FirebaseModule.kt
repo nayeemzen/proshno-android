@@ -1,6 +1,7 @@
 package com.proshnotechnologies.proshno.di
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -11,4 +12,9 @@ object FirebaseModule {
     @Provides
     @Singleton
     fun firebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
+
+    @JvmStatic
+    @Provides
+    @Singleton
+    fun firebaseFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
 }

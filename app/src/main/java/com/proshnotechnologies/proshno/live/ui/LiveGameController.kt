@@ -58,12 +58,10 @@ import tcking.github.com.giraffeplayer2.GiraffePlayer
 import tcking.github.com.giraffeplayer2.VideoInfo
 import tcking.github.com.giraffeplayer2.VideoInfo.AR_ASPECT_FILL_PARENT
 import tcking.github.com.giraffeplayer2.VideoView
-import timber.log.Timber
 import javax.inject.Inject
 
 class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewState> {
     @Inject lateinit var viewModel: LiveGameViewModel
-
     private lateinit var player: GiraffePlayer
     private lateinit var linearTimer: LinearTimer
     private val disposables: CompositeDisposable = CompositeDisposable()
@@ -91,7 +89,9 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
 
                 if (state.inFlight) {
                     option?.setBackgroundResource(R.drawable.rounded_rectangle_yellow)
-                } else if (state.error != null) {
+                }
+
+                if (state.error != null) {
                     option?.setBackgroundResource(R.drawable.rounded_rectangle)
                     Toast.makeText(activity, "Error: please try again", Toast.LENGTH_SHORT).show()
                 }
@@ -101,11 +101,11 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
                 linearTimer.startTimer()
                 view?.let {
                     it.linear_timer.visibility = VISIBLE
-                    it.tv_question.text = state.question.question
-                    it.tv_question.tag = state.question.questionId
-                    it.option_1.tv_option.text = state.question.choices[0].text
-                    it.option_2.tv_option.text = state.question.choices[1].text
-                    it.option_3.tv_option.text = state.question.choices[2].text
+                    it.tv_question.text = state.question.text
+                    it.tv_question.tag = state.question.id
+                    it.option_1.tv_option.text = state.question.choices[0]
+                    it.option_2.tv_option.text = state.question.choices[1]
+                    it.option_3.tv_option.text = state.question.choices[2]
                     it.option_1.tv_num_answered.visibility = INVISIBLE
                     it.option_2.tv_num_answered.visibility = INVISIBLE
                     it.option_3.tv_num_answered.visibility = INVISIBLE
@@ -114,29 +114,29 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
 
             is ReceivedAnswer -> {
                 view?.let {
-                    it.option_1.tv_num_answered.text = state.question.choices[0].numAnswered.toString()
-                    it.option_2.tv_num_answered.text = state.question.choices[1].numAnswered.toString()
-                    it.option_3.tv_num_answered.text = state.question.choices[2].numAnswered.toString()
+//                    it.option_1.tv_num_answered.text = state.question.choices[0].numAnswered.toString()
+//                    it.option_2.tv_num_answered.text = state.question.choices[1].numAnswered.toString()
+//                    it.option_3.tv_num_answered.text = state.question.choices[2].numAnswered.toString()
                     it.option_1.tv_num_answered.visibility = VISIBLE
                     it.option_2.tv_num_answered.visibility = VISIBLE
                     it.option_3.tv_num_answered.visibility = VISIBLE
 
-                    val option = when (state.question.answer) {
-                        1 -> it.option_1
-                        2 -> it.option_2
-                        3 -> it.option_3
+                    val option = when (state.answer.answer) {
+                        0 -> it.option_1
+                        1 -> it.option_2
+                        2 -> it.option_3
                         else -> {
-                            throw IllegalArgumentException("Invalid option: ${state.question.answer}")
+                            throw IllegalArgumentException("Invalid option: ${state.answer}")
                         }
                     }
                     option?.setBackgroundResource(R.drawable.rounded_rectangle_green)
-                    activity?.let {
-                        if (state.userAnswer == state.question.answer) {
-                            Toasty.success(it, "Correct!").show()
-                        } else {
-                            Toasty.error(it, "Wrong!").show()
-                        }
-                    }
+//                    activity?.let {
+//                        if (state.answer.answer ) {
+//                            Toasty.success(it, "Correct!").show()
+//                        } else {
+//                            Toasty.error(it, "Wrong!").show()
+//                        }
+//                    }
 
                 }
             }

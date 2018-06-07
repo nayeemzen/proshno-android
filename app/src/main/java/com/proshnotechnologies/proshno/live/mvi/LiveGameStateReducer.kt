@@ -8,6 +8,7 @@ import com.proshnotechnologies.proshno.live.mvi.LiveGameResult.ReceivedExpandScr
 import com.proshnotechnologies.proshno.live.mvi.LiveGameResult.ReceivedQuestion
 import com.proshnotechnologies.proshno.live.mvi.LiveGameResult.ReceivedStreamStats
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ChooseAnswer
+import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ConnectToGame
 import com.proshnotechnologies.proshno.mvi.MviStateReducer
 import javax.inject.Inject
 
@@ -35,14 +36,29 @@ class LiveGameStateReducer @Inject constructor(): MviStateReducer<LiveGameResult
             choice = result.choice
         )
 
+        is LiveGameResult.ConnectToGameInFlight -> ConnectToGame(
+            inFlight = true,
+            success = false,
+            error = null
+        )
+
+        is LiveGameResult.ConnectToGameSuccess -> ConnectToGame(
+            inFlight = false,
+            success = true,
+            game = result.game,
+            error = null
+        )
+
+        is LiveGameResult.ConnectToGameFailure -> ConnectToGame(
+            inFlight = false,
+            success = false,
+            error = result.error
+        )
+
         is ReceivedExpandScreen -> LiveGameViewState.ReceivedExpandScreen
         is ReceivedQuestion -> LiveGameViewState.ReceivedQuestion(result.question)
-        is ReceivedAnswer -> LiveGameViewState.ReceivedAnswer(result.question, result.userAnswer)
+        is ReceivedAnswer -> LiveGameViewState.ReceivedAnswer(result.answer)
         is ReceivedStreamStats -> LiveGameViewState.ReceivedStreamStats(
             previousState.isFullScreen, result.numLiveViewers)
-
-        is LiveGameResult.ConnectToGameInFlight -> previousState
-        is LiveGameResult.ConnectToGameSuccess -> previousState
-        is LiveGameResult.ConnectToGameFailure -> previousState
     }
 }

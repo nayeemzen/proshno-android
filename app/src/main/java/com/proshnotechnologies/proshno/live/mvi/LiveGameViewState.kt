@@ -1,12 +1,21 @@
 package com.proshnotechnologies.proshno.live.mvi
 
+import com.proshnotechnologies.proshno.live.domain.Answer
+import com.proshnotechnologies.proshno.live.domain.Game
 import com.proshnotechnologies.proshno.live.domain.Question
 import com.proshnotechnologies.proshno.mvi.MviViewState
 
 sealed class LiveGameViewState(val isFullScreen: Boolean) : MviViewState {
-    data class Initial(val fullScreenMode: Boolean) : LiveGameViewState(fullScreenMode)
+    data class Initial(private val fullScreenMode: Boolean) : LiveGameViewState(fullScreenMode)
 
     object ReceivedExpandScreen : LiveGameViewState(true)
+
+    data class ConnectToGame(
+        val inFlight: Boolean,
+        val success: Boolean,
+        val game: Game? = null,
+        val error: Throwable?
+    ) : LiveGameViewState(game?.currentQuestion == null)
 
     data class ChooseAnswer(
         val inFlight: Boolean,
@@ -17,10 +26,7 @@ sealed class LiveGameViewState(val isFullScreen: Boolean) : MviViewState {
 
     data class ReceivedQuestion(val question: Question) : LiveGameViewState(false)
 
-    data class ReceivedAnswer(
-        val question: Question,
-        val userAnswer: Int?
-    ) : LiveGameViewState(false)
+    data class ReceivedAnswer(val answer: Answer) : LiveGameViewState(false)
 
     data class ReceivedStreamStats(
         private val _isFullScreen: Boolean,

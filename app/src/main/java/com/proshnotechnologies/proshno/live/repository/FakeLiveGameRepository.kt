@@ -1,49 +1,46 @@
 package com.proshnotechnologies.proshno.live.repository
 
-import com.proshnotechnologies.proshno.live.domain.Choice
+import com.google.firebase.firestore.FirebaseFirestore
+import com.proshnotechnologies.proshno.live.domain.Answer
+import com.proshnotechnologies.proshno.live.domain.Game
 import com.proshnotechnologies.proshno.live.domain.Question
 import com.proshnotechnologies.proshno.live.mvi.LiveGameResult
 import com.proshnotechnologies.proshno.live.mvi.LiveGameResult.ChooseAnswerSuccess
 import io.reactivex.Observable
 import org.threeten.bp.Duration
+import org.threeten.bp.Instant
 import java.util.UUID
 import java.util.concurrent.TimeUnit.SECONDS
 import javax.inject.Inject
 
-class FakeLiveGameRepository @Inject constructor(): LiveGameRepository {
+class FakeLiveGameRepository @Inject constructor(
+    private val firestore: FirebaseFirestore
+): LiveGameRepository {
+    private val gameId = UUID.randomUUID().toString()
     private var userAnswer: Int? = null
 
     private val question = Question(
-        questionId = UUID.randomUUID().toString(),
-        question = "Which company initially developed the Android Mobile OS?",
+        gameId = gameId,
+        id = UUID.randomUUID().toString(),
+        text = "Which company initially developed the Android Mobile OS?",
         duration = Duration.ofSeconds(5),
-        answer = 2,
-        choices = listOf(
-            Choice(
-                questionId = 123456789L,
-                text = "Symbian Ltd",
-                numAnswered = 10
-            ),
-            Choice(
-                questionId = 123456789L,
-                text = "Android Inc",
-                numAnswered = 100
-            ),
-            Choice(
-                questionId = 123456789L,
-                text = "Google Inc",
-                numAnswered = 190
-            ))
+        choices = listOf("Symbian Ltd", "Android Inc", "Google Inc")
     )
 
     private val fixtures = listOf(
         {
-            LiveGameResult.ReceivedQuestion(question.copy(
-                answer = null,
-                choices = question.choices.map { it.copy(numAnswered = null) }
+            LiveGameResult.ConnectToGameSuccess(Game(
+                gameId = gameId,
+                startTime = Instant.now(),
+                prize = 10000,
+                isLive = true,
+                isUserEliminated = false,
+                currentQuestion = null,
+                streamUrl = "rtmp://10.88.111.6/live/test"
             ))
         },
-        { LiveGameResult.ReceivedAnswer(question, userAnswer) },
+        { LiveGameResult.ReceivedQuestion(question) },
+        { LiveGameResult.ReceivedAnswer(Answer(questionId = question.id, answer = 1)) },
         { LiveGameResult.ReceivedExpandScreen }
     )
 
@@ -56,6 +53,6 @@ class FakeLiveGameRepository @Inject constructor(): LiveGameRepository {
         return Observable.fromIterable(fixtures)
             .concatMap { Observable.just(it).delay(question.duration.seconds, SECONDS) }
             .map { it() }
-            .startWith(LiveGameResult.ConnectToGameSuccess)
+            .startWith(LiveGameResult.ConnectToGameInFlight)
     }
 }
