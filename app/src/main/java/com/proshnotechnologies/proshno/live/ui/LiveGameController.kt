@@ -28,6 +28,7 @@ import com.proshnotechnologies.proshno.live.mvi.LiveGameIntent.ChooseAnswerInten
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewModel
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ChooseAnswer
+import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ConnectToGame
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ReceivedAnswer
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ReceivedQuestion
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ReceivedStreamStats
@@ -36,6 +37,7 @@ import com.proshnotechnologies.proshno.utils.extensions.dp
 import es.dmoral.toasty.Toasty
 import io.github.krtkush.lineartimer.LinearTimer
 import io.github.krtkush.lineartimer.LinearTimer.Builder
+import io.github.krtkush.lineartimer.LinearTimer.TimerListener
 import io.github.krtkush.lineartimer.LinearTimerStates.INITIALIZED
 import io.github.krtkush.lineartimer.LinearTimerView
 import io.reactivex.Observable
@@ -59,6 +61,7 @@ import tcking.github.com.giraffeplayer2.GiraffePlayer
 import tcking.github.com.giraffeplayer2.VideoInfo
 import tcking.github.com.giraffeplayer2.VideoInfo.AR_ASPECT_FILL_PARENT
 import tcking.github.com.giraffeplayer2.VideoView
+import timber.log.Timber
 import javax.inject.Inject
 
 class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewState> {
@@ -109,6 +112,9 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
                     it.linear_timer.visibility = VISIBLE
                     it.tv_question.text = state.question.text
                     it.tv_question.tag = state.question.id
+                    it.option_1.setBackgroundResource(R.drawable.rounded_rectangle_transparent)
+                    it.option_2.setBackgroundResource(R.drawable.rounded_rectangle_transparent)
+                    it.option_3.setBackgroundResource(R.drawable.rounded_rectangle_transparent)
                     it.option_1.tv_option.text = state.question.choices[0]
                     it.option_2.tv_option.text = state.question.choices[1]
                     it.option_3.tv_option.text = state.question.choices[2]
@@ -149,6 +155,12 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
 
             is ReceivedStreamStats -> {
                 TODO("Implement stats")
+            }
+
+            is ConnectToGame -> {
+                if (state.error != null) {
+                    Timber.e(state.error)
+                }
             }
         }
     }
@@ -191,6 +203,11 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
         linearTimer = Builder()
             .linearTimerView(linearTimerView)
             .duration(5 * 1000)
+            .timerListener(object : TimerListener {
+                override fun onTimerReset() {}
+                override fun animationComplete() {}
+                override fun timerTick(tickUpdateInMillis: Long) {}
+            })
             .build()
     }
 

@@ -22,7 +22,7 @@ class RealLiveGameRepository @Inject constructor(
     }
 
     override fun connect(): Observable<LiveGameResult> {
-        return questions()
+        return Observable.merge(questions(), answers())
     }
 
     private fun questions(): Observable<LiveGameResult> {
@@ -45,6 +45,7 @@ class RealLiveGameRepository @Inject constructor(
 
     private fun answers(): Observable<LiveGameResult> {
         return firestore.collection("answers")
+            .whereEqualTo("enabled", true)
             .orderBy("order", DESCENDING)
             .limit(1)
             .toObservable()
