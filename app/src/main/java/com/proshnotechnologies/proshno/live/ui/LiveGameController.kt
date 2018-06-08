@@ -96,7 +96,8 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
                 }
 
                 if (state.error != null) {
-                    option?.setBackgroundResource(R.drawable.rounded_rectangle)
+                    option?.setBackgroundResource(R.drawable.rounded_rectangle_transparent)
+                    Timber.e(state.error)
                     Toast.makeText(activity, "Error: please try again", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -193,7 +194,7 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
             .singletonComponent((activity as MainActivity).singletonComponent())
             .build()
             .inject(this)
-        initVideoPlayer(layout)
+        //initVideoPlayer(layout)
         bindIntents(layout)
         return layout
     }

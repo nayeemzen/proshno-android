@@ -1,10 +1,15 @@
 package com.proshnotechnologies.proshno.live.repository
 
+import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query.Direction.DESCENDING
 import com.proshnotechnologies.proshno.live.domain.Answer
 import com.proshnotechnologies.proshno.live.domain.Question
 import com.proshnotechnologies.proshno.live.mvi.LiveGameResult
+import com.proshnotechnologies.proshno.live.mvi.LiveGameResult.ChooseAnswerSuccess
 import com.proshnotechnologies.proshno.live.mvi.LiveGameResult.ReceivedAnswer
 import com.proshnotechnologies.proshno.live.mvi.LiveGameResult.ReceivedQuestion
 import com.proshnotechnologies.proshno.utils.extensions.toObservable
@@ -14,11 +19,21 @@ import timber.log.Timber
 import javax.inject.Inject
 
 class RealLiveGameRepository @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val auth: FirebaseAuth
 ) : LiveGameRepository {
     override fun chooseAnswer(questionId: String, choice: Int): Observable<LiveGameResult> {
-        Timber.e("Not yet implemented!!")
-        return Observable.empty()
+        val payload = mapOf(
+            "userId" to auth.currentUser?.uid,
+            "questionId" to questionId,
+            "choice" to choice,
+            "createdAt" to FieldValue.serverTimestamp()
+        )
+
+        return firestore.collection("responses")
+            .add(payload)
+            .toObservable()
+            .map { ChooseAnswerSuccess(choice) }
     }
 
     override fun connect(): Observable<LiveGameResult> {
