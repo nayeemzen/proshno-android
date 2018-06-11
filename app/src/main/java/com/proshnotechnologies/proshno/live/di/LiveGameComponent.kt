@@ -1,5 +1,6 @@
 package com.proshnotechnologies.proshno.live.di
 
+import android.content.SharedPreferences
 import com.proshnotechnologies.proshno.di.ControllerScope
 import com.proshnotechnologies.proshno.di.SingletonComponent
 import com.proshnotechnologies.proshno.live.ui.LiveGameController

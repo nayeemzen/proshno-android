@@ -6,7 +6,8 @@ import com.proshnotechnologies.proshno.live.domain.Question
 import com.proshnotechnologies.proshno.mvi.MviViewState
 
 sealed class LiveGameViewState(val isFullScreen: Boolean) : MviViewState {
-    data class Initial(private val fullScreenMode: Boolean) : LiveGameViewState(fullScreenMode)
+    data class Initial(private val fullScreen: Boolean) : LiveGameViewState(fullScreen)
+    data class ReceivedUserEliminated(val fullScreen: Boolean) : LiveGameViewState(fullScreen)
 
     object ReceivedExpandScreen : LiveGameViewState(true)
 
@@ -15,7 +16,7 @@ sealed class LiveGameViewState(val isFullScreen: Boolean) : MviViewState {
         val success: Boolean,
         val game: Game? = null,
         val error: Throwable?
-    ) : LiveGameViewState(game?.currentQuestion == null)
+    ) : LiveGameViewState(true)
 
     data class ChooseAnswer(
         val inFlight: Boolean,

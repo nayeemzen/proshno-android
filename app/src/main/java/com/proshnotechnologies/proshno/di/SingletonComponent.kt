@@ -1,5 +1,6 @@
 package com.proshnotechnologies.proshno.di
 
+import android.app.Application
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Component
@@ -14,4 +15,6 @@ interface SingletonComponent {
     fun firebaseFirestore(): FirebaseFirestore
 
     fun clock(): Clock
+
+    fun application(): Application
 }

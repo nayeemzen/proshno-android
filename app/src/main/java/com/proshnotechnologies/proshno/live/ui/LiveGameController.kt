@@ -32,6 +32,8 @@ import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ConnectToGame
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ReceivedAnswer
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ReceivedQuestion
 import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ReceivedStreamStats
+import com.proshnotechnologies.proshno.live.mvi.LiveGameViewState.ReceivedUserEliminated
+import com.proshnotechnologies.proshno.live.repository.LocalDataStore
 import com.proshnotechnologies.proshno.mvi.MviView
 import com.proshnotechnologies.proshno.utils.extensions.dp
 import es.dmoral.toasty.Toasty
@@ -65,7 +67,9 @@ import timber.log.Timber
 import javax.inject.Inject
 
 class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewState> {
+    @Inject lateinit var localDataStore: LocalDataStore
     @Inject lateinit var viewModel: LiveGameViewModel
+
     private lateinit var player: GiraffePlayer
     private lateinit var linearTimer: LinearTimer
     private val disposables: CompositeDisposable = CompositeDisposable()
@@ -127,9 +131,9 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
 
             is ReceivedAnswer -> {
                 view?.let {
-//                    it.option_1.tv_num_answered.text = state.question.choices[0].numAnswered.toString()
-//                    it.option_2.tv_num_answered.text = state.question.choices[1].numAnswered.toString()
-//                    it.option_3.tv_num_answered.text = state.question.choices[2].numAnswered.toString()
+                    it.option_1.tv_num_answered.text = state.answer.numResponses[0].toString()
+                    it.option_2.tv_num_answered.text = state.answer.numResponses[1].toString()
+                    it.option_3.tv_num_answered.text = state.answer.numResponses[2].toString()
                     it.option_1.tv_num_answered.visibility = VISIBLE
                     it.option_2.tv_num_answered.visibility = VISIBLE
                     it.option_3.tv_num_answered.visibility = VISIBLE
@@ -143,13 +147,13 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
                         }
                     }
                     option?.setBackgroundResource(R.drawable.rounded_rectangle_green)
-//                    activity?.let {
-//                        if (state.answer.answer ) {
-//                            Toasty.success(it, "Correct!").show()
-//                        } else {
-//                            Toasty.error(it, "Wrong!").show()
-//                        }
-//                    }
+                    activity?.let {
+                        if (state.answer.isCorrect()) {
+                            Toasty.success(it, "Correct!").show()
+                        } else {
+                            Toasty.error(it, "Wrong!").show()
+                        }
+                    }
 
                 }
             }
@@ -161,6 +165,16 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
             is ConnectToGame -> {
                 if (state.error != null) {
                     Timber.e(state.error)
+                } else {
+                    activity?.let {
+                        Toasty.info(it, "Connected")
+                    }
+                }
+            }
+
+            is ReceivedUserEliminated -> {
+                activity?.let {
+                    Toasty.info(it, "You are eliminated")
                 }
             }
         }
@@ -169,6 +183,7 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
     private fun bindIntents(view: View) {
         viewModel.states()
             .observeOn(AndroidSchedulers.mainThread())
+            .distinctUntilChanged()
             .subscribe(this::render)
             .addTo(disposables)
         viewModel.processIntents(intents(view))
@@ -176,9 +191,10 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
 
     private fun chooseAnswerIntent(view: View): Observable<LiveGameIntent> {
         return Observable.merge(
-            view.option_1.clicks().map { 1 },
-            view.option_2.clicks().map { 2 },
-            view.option_3.clicks().map { 3 })
+            view.option_1.clicks().map { 0 },
+            view.option_2.clicks().map { 1 },
+            view.option_3.clicks().map { 2 })
+            .filter { !localDataStore.isEliminated() }
             .map { ChooseAnswerIntent(view.tv_question.tag as String, it) }
             .distinctUntilChanged { it -> it.questionId }
             .cast(LiveGameIntent::class.java)

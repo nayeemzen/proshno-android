@@ -6,17 +6,16 @@ import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
 import com.google.firebase.firestore.FirebaseFirestoreSettings.Builder
+import com.proshnotechnologies.proshno.live.domain.User
 
 @Module
 object FirebaseModule {
     @JvmStatic
     @Provides
-    @Singleton
     fun firebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
 
     @JvmStatic
     @Provides
-    @Singleton
     fun firebaseFirestore(): FirebaseFirestore {
         val firestore = FirebaseFirestore.getInstance()
         firestore.firestoreSettings = Builder()

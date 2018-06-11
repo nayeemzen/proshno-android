@@ -30,14 +30,11 @@ class FakeLiveGameRepository @Inject constructor() : LiveGameRepository {
                 gameId = gameId,
                 startTime = Instant.now(),
                 prize = 10000,
-                isLive = true,
-                isUserEliminated = false,
-                currentQuestion = null,
-                streamUrl = "rtmp://10.88.111.6/live/test"
+                isLive = true
             ))
         },
         { LiveGameResult.ReceivedQuestion(question) },
-        { LiveGameResult.ReceivedAnswer(Answer(questionId = question.id, answer = 1)) },
+        { LiveGameResult.ReceivedAnswer(Answer(questionId = question.id, answer = 1, numResponses = listOf(), userChoice = -1)) },
         { LiveGameResult.ReceivedExpandScreen }
     )
 

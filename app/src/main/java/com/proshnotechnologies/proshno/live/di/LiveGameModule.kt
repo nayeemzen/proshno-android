@@ -2,27 +2,33 @@ package com.proshnotechnologies.proshno.live.di
 
 import android.app.Application
 import android.content.Context
-import android.content.SharedPreferences
-import com.proshnotechnologies.proshno.live.repository.FakeLiveGameRepository
+import com.google.firebase.auth.FirebaseAuth
+import com.proshnotechnologies.proshno.live.domain.User
 import com.proshnotechnologies.proshno.live.repository.LiveGameRepository
+import com.proshnotechnologies.proshno.live.repository.LocalDataStore
 import com.proshnotechnologies.proshno.live.repository.RealLiveGameRepository
+import com.proshnotechnologies.proshno.live.repository.RealLocalDataStore
 import dagger.Binds
 import dagger.Module
-import javax.inject.Named
+import dagger.Provides
 
 @Module
 abstract class LiveGameModule {
+    @Module
+    companion object {
+        @JvmStatic
+        @Provides
+        fun sharedPreferences(user: User, application: Application) =
+            application.getSharedPreferences("${user.id}.LIVE_GAME_PREFERENCES", Context.MODE_PRIVATE)
+
+        @JvmStatic
+        @Provides
+        fun currentUser(auth: FirebaseAuth) = User(auth.currentUser!!.uid)
+    }
+
     @Binds
     abstract fun liveGameRepository(repository: RealLiveGameRepository) : LiveGameRepository
 
-    @Module
-    companion object {
-        const val LIVE_GAME_PREFERENCES: String = "LIVE_GAME_PREFERENCES"
-
-        @JvmStatic
-        @Named(LIVE_GAME_PREFERENCES)
-        fun sharedPreferences(application: Application) : SharedPreferences {
-            return application.getSharedPreferences(LIVE_GAME_PREFERENCES, Context.MODE_PRIVATE)
-        }
-    }
+    @Binds
+    abstract fun localDataStore(localDataStore: RealLocalDataStore) : LocalDataStore
 }

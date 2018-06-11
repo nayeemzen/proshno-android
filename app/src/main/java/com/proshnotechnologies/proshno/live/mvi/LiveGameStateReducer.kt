@@ -55,10 +55,18 @@ class LiveGameStateReducer @Inject constructor(): MviStateReducer<LiveGameResult
             error = result.error
         )
 
+        is ReceivedStreamStats -> {
+            LiveGameViewState.ReceivedStreamStats(previousState.isFullScreen, result.numLiveViewers)
+        }
+
+        LiveGameResult.ReceivedUserEliminated -> {
+            LiveGameViewState.ReceivedUserEliminated(previousState.isFullScreen)
+        }
+
         is ReceivedExpandScreen -> LiveGameViewState.ReceivedExpandScreen
         is ReceivedQuestion -> LiveGameViewState.ReceivedQuestion(result.question)
         is ReceivedAnswer -> LiveGameViewState.ReceivedAnswer(result.answer)
-        is ReceivedStreamStats -> LiveGameViewState.ReceivedStreamStats(
-            previousState.isFullScreen, result.numLiveViewers)
+        is LiveGameResult.FetchGameSuccess -> previousState
+        is LiveGameResult.AddToParticipantsSuccess -> previousState
     }
 }
