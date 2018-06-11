@@ -57,15 +57,17 @@ class RealLiveGameRepository @Inject constructor(
     }
 
     private fun participation(gameId: String): Observable<LiveGameResult> {
-        Timber.i("Started participation listener.")
         return firestore.document("games/$gameId/participants/${user.id}")
             .toObservable()
-            .doOnNext { localDataStore.setIsEliminated(it.getBoolean("isEliminated")!!) }
+            .doOnError { Timber.e(it, "Error listening for participation.") }
+            .doOnNext {
+                Timber.i("Started participation listener.")
+                localDataStore.setIsEliminated(it.getBoolean("isEliminated")!!)
+            }
             .map { ReceivedUserEliminated }
     }
 
     private fun addToParticipants(game: Game): Observable<AddToParticipantsSuccess> {
-        Timber.i("Adding user to participants")
         return firestore.document("games/${game.gameId}/participants/${user.id}")
             .set(mapOf(
                 "userId" to user.id,
@@ -74,18 +76,23 @@ class RealLiveGameRepository @Inject constructor(
                 "isEliminated" to false
             ))
             .toCompletable()
+            .doOnError { Timber.e(it, "Error adding user to participants.") }
+            .doOnComplete { Timber.i("Adding user to participants") }
             .andThen(Observable.just(AddToParticipantsSuccess(game)))
     }
 
     private fun latestLiveGame(): Observable<FetchGameSuccess> {
-        Timber.i("Fetching latest game.")
         return firestore.collection("games")
             .whereEqualTo("isLive", true)
             .orderBy("startsAt", DESCENDING)
             .limit(1)
             .get()
             .toObservable()
-            .doOnNext { localDataStore.setGameId(it.documents.single().id) }
+            .doOnError { Timber.e(it, "Error fetching latest game.") }
+            .doOnNext {
+                Timber.i("Fetching latest game.")
+                localDataStore.setGameId(it.documents.single().id)
+            }
             .map {
                 val doc = it.documents.single()
                 FetchGameSuccess(
@@ -100,13 +107,14 @@ class RealLiveGameRepository @Inject constructor(
     }
 
     private fun questions(gameId: String): Observable<LiveGameResult> {
-        Timber.i("Started questions listener.")
         return firestore.collection("questions")
             .whereEqualTo("gameId", gameId)
             .whereEqualTo("enabled", true)
             .orderBy("order", DESCENDING)
             .limit(1)
             .toObservable()
+            .doOnError { Timber.e(it, "Error starting questions listener.") }
+            .doOnSubscribe { Timber.i("Started questions listener.") }
             .map {
                 val doc = it.documents.single()
                 ReceivedQuestion(Question(
@@ -120,13 +128,14 @@ class RealLiveGameRepository @Inject constructor(
     }
 
     private fun answers(gameId: String): Observable<LiveGameResult> {
-        Timber.i("Started answer listener.")
         return firestore.collection("answers")
             .whereEqualTo("gameId", gameId)
             .whereEqualTo("enabled", true)
             .orderBy("order", DESCENDING)
             .limit(1)
             .toObservable()
+            .doOnError { Timber.e(it, "Error starting answers listener.") }
+            .doOnSubscribe { Timber.i("Started answer listener.") }
             .map {
                 val doc = it.documents.single()
                 val questionId = doc.getString("questionId")!!

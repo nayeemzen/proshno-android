@@ -63,7 +63,6 @@ import tcking.github.com.giraffeplayer2.GiraffePlayer
 import tcking.github.com.giraffeplayer2.VideoInfo
 import tcking.github.com.giraffeplayer2.VideoInfo.AR_ASPECT_FILL_PARENT
 import tcking.github.com.giraffeplayer2.VideoView
-import timber.log.Timber
 import javax.inject.Inject
 
 class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewState> {
@@ -101,7 +100,6 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
 
                 if (state.error != null) {
                     option?.setBackgroundResource(R.drawable.rounded_rectangle_transparent)
-                    Timber.e(state.error)
                     Toast.makeText(activity, "Error: please try again", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -163,18 +161,19 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
             }
 
             is ConnectToGame -> {
-                if (state.error != null) {
-                    Timber.e(state.error)
-                } else {
-                    activity?.let {
-                        Toasty.info(it, "Connected")
+                activity?.let {
+                    if (state.error != null) {
+                        Toasty.error(it, "Error connecting, please restart the app.").show()
+                    } else {
+                        Toasty.info(it, "Connected.").show()
                     }
                 }
+
             }
 
             is ReceivedUserEliminated -> {
                 activity?.let {
-                    Toasty.info(it, "You are eliminated")
+                    Toasty.info(it, "You are eliminated").show()
                 }
             }
         }
