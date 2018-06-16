@@ -43,7 +43,7 @@ class RealLiveGameRepository @Inject constructor(
                 "createdAt" to FieldValue.serverTimestamp()
             ))
             .toObservable()
-            .doOnNext { }
+            .doOnNext { localDataStore.setChoice(questionId, choice) }
             .map { ChooseAnswerSuccess(choice) }
     }
 
@@ -158,7 +158,7 @@ class RealLiveGameRepository @Inject constructor(
                     answer = Answer(
                         questionId = questionId,
                         answer = doc.getLong("answer")!!.toInt(),
-                        numResponses = (doc.get("numResponses") as List<Any?>).map { it as Int },
+                        numResponses = (doc.get("numResponses") as List<Any?>).map { (it as Long).toInt() },
                         userChoice = userChoice
                     )
                 )

@@ -63,6 +63,7 @@ import tcking.github.com.giraffeplayer2.GiraffePlayer
 import tcking.github.com.giraffeplayer2.VideoInfo
 import tcking.github.com.giraffeplayer2.VideoInfo.AR_ASPECT_FILL_PARENT
 import tcking.github.com.giraffeplayer2.VideoView
+import timber.log.Timber
 import javax.inject.Inject
 
 class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewState> {
@@ -89,9 +90,10 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
         when (state) {
             is ChooseAnswer -> {
                 val option = when {
-                    state.choice == 1 -> view?.option_1
-                    state.choice == 2 -> view?.option_2
-                    else -> view?.option_3
+                    state.choice == 0 -> view?.option_1
+                    state.choice == 1 -> view?.option_2
+                    state.choice == 2 -> view?.option_3
+                    else -> throw IllegalArgumentException("Invalid option")
                 }
 
                 if (state.inFlight) {
@@ -163,6 +165,7 @@ class LiveGameController : Controller(), MviView<LiveGameIntent, LiveGameViewSta
             is ConnectToGame -> {
                 activity?.let {
                     if (state.error != null) {
+                        Timber.e(state.error)
                         Toasty.error(it, "Error connecting, please restart the app.").show()
                     } else {
                         Toasty.info(it, "Connected.").show()
