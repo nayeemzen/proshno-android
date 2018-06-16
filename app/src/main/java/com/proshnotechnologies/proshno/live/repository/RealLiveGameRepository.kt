@@ -2,6 +2,9 @@ package com.proshnotechnologies.proshno.live.repository
 
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.firestore.FirebaseFirestoreException.Code
+import com.google.firebase.firestore.FirebaseFirestoreException.Code.PERMISSION_DENIED
 import com.google.firebase.firestore.Query.Direction.DESCENDING
 import com.proshnotechnologies.proshno.live.domain.Answer
 import com.proshnotechnologies.proshno.live.domain.Game
@@ -18,6 +21,7 @@ import com.proshnotechnologies.proshno.live.mvi.LiveGameResult.ReceivedUserElimi
 import com.proshnotechnologies.proshno.utils.extensions.toCompletable
 import com.proshnotechnologies.proshno.utils.extensions.toInstant
 import com.proshnotechnologies.proshno.utils.extensions.toObservable
+import io.reactivex.Completable
 import io.reactivex.Observable
 import org.threeten.bp.Duration
 import timber.log.Timber
@@ -62,8 +66,9 @@ class RealLiveGameRepository @Inject constructor(
             .doOnError { Timber.e(it, "Error listening for participation.") }
             .doOnNext {
                 Timber.i("Started participation listener.")
-                localDataStore.setIsEliminated(it.getBoolean("isEliminated")!!)
+                localDataStore.setIsEliminated(it.getBoolean("isEliminated") ?: false)
             }
+            .filter { it.getBoolean("isEliminated") ?: false }
             .map { ReceivedUserEliminated }
     }
 
@@ -76,8 +81,17 @@ class RealLiveGameRepository @Inject constructor(
                 "isEliminated" to false
             ))
             .toCompletable()
+            .onErrorResumeNext {
+                // Swallow permission denied errors when adding to participants and allow the
+                // participants listener to handle elimination.
+                if (it is FirebaseFirestoreException && it.code == PERMISSION_DENIED) {
+                    Completable.complete()
+                } else {
+                    Completable.error(it)
+                }
+            }
             .doOnError { Timber.e(it, "Error adding user to participants.") }
-            .doOnComplete { Timber.i("Adding user to participants") }
+            .doOnComplete { Timber.i("Added user to participants") }
             .andThen(Observable.just(AddToParticipantsSuccess(game)))
     }
 
